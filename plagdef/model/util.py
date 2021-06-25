@@ -1,6 +1,12 @@
-from numpy import dot
+import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from multiprocessing import RLock
+from typing import Callable
+
+from numpy import dot, array_split
 from numpy.linalg import norm
 from pkg_resources import get_distribution
+from tqdm import tqdm
 
 
 def version():
@@ -30,3 +36,13 @@ def dice_sim(bow1: dict, bow2: dict):
     n_com = len(set(bow1.keys()).intersection(bow2.keys()))
     n_x_plus_n_y = len(bow1) + len(bow2)
     return 2 * n_com / n_x_plus_n_y if n_x_plus_n_y else 0
+
+
+def parallelize(fun: Callable, data):
+    data_chunks = array_split(data, os.cpu_count())
+    with ProcessPoolExecutor(initargs=(RLock(),), initializer=tqdm.set_lock, max_workers=os.cpu_count()) as p:
+        futures = []
+        for i, chunk in enumerate(data_chunks):
+            futures.append(p.submit(fun, chunk, i))
+        match_chunks = [f.result() for f in as_completed(futures)]
+    return [match for chunk in match_chunks for match in chunk]
