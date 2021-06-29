@@ -27,37 +27,24 @@ class Pipeline:
         doc_pair_matches = DocumentPairMatches(self._doc1, self._doc2)
         seeds = self._pipe_comps.seeder.seed(self._doc1, self._doc2)
         clusters = self._build_clusters(seeds, self._pipe_comps.intelligent_cb)
+        verbatim_matches = intelligent_matches = summary_matches = set()
         if len(clusters):
-            self._find_verbatim_matches(clusters, doc_pair_matches)
-            self._find_intelligent_matches(clusters, doc_pair_matches)
+            verbatim_matches = self._pipe_comps.verbatim_matcher.find_verbatim_matches(clusters)
+            intelligent_matches = {Match.from_cluster(MatchType.INTELLIGENT, cluster) for cluster in clusters}
         summary_clusters = self._build_clusters(seeds, self._pipe_comps.summary_cb)
         if len(summary_clusters):
-            self._find_summary_matches(summary_clusters, doc_pair_matches)
+            sum_cluster_len_doc1, sum_cluster_len_doc2 = \
+                tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
+            if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
+                or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
+                summary_matches = {Match.from_cluster(MatchType.SUMMARY, cluster) for cluster in summary_clusters}
+        doc_pair_matches.update({*verbatim_matches, *intelligent_matches, *summary_matches})
         return doc_pair_matches
 
     def _build_clusters(self, seeds, cluster_builder: ClusterBuilder):
         clusters = cluster_builder.extend(seeds)
         clusters = self._pipe_comps.cf.filter(clusters)
         return clusters
-
-    # TODO: Three equal param combs, extract!
-    def _find_verbatim_matches(self, clusters, doc_pair_matches):
-        verbatim_matches = self._pipe_comps.verbatim_matcher.find_verbatim_matches(clusters)
-        doc_pair_matches.update(verbatim_matches)
-
-    def _find_intelligent_matches(self, clusters, doc_pair_matches):
-        intelligent_matches = {Match.from_cluster(MatchType.INTELLIGENT, cluster) for cluster in
-                               clusters}.difference(doc_pair_matches.list(MatchType.VERBATIM))
-        doc_pair_matches.update(intelligent_matches)
-
-    def _find_summary_matches(self, summary_clusters, doc_pair_matches):
-        sum_cluster_len_doc1, sum_cluster_len_doc2 = \
-            tuple(map(sum, zip(*(cluster.char_lengths() for cluster in summary_clusters))))
-        if sum_cluster_len_doc1 >= 3 * sum_cluster_len_doc2 \
-            or sum_cluster_len_doc2 >= 3 * sum_cluster_len_doc1:
-            summary_matches = {Match.from_cluster(MatchType.SUMMARY, cluster) for cluster in
-                               summary_clusters}.difference(doc_pair_matches.list(MatchType.VERBATIM))
-            doc_pair_matches.update(summary_matches)
 
 
 class VerbatimMatcher:
