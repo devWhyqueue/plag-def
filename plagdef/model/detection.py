@@ -6,12 +6,12 @@ from itertools import combinations, product
 from tqdm import tqdm
 
 from plagdef.model import matching
-from plagdef.model.extension import ClusterBuilder
-from plagdef.model.filtering import ClusterFilter
 from plagdef.model.matching import PipeComponents, VerbatimMatcher
 from plagdef.model.models import Document, DocumentPairMatches
-from plagdef.model.preprocessing import Preprocessor
-from plagdef.model.seeding import SeedFinder
+from plagdef.model.pipeline.extension import ClusterBuilder
+from plagdef.model.pipeline.filtering import ClusterFilter
+from plagdef.model.pipeline.preprocessing import Preprocessor
+from plagdef.model.pipeline.seeding import SeedFinder
 from plagdef.model.util import parallelize
 
 log = logging.getLogger(__name__)

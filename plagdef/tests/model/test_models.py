@@ -6,7 +6,7 @@ import pytest
 from plagdef.model.models import Document, Sentence, Cluster, Fragment, Word, RatedCluster, Match, \
     DocumentPairMatches, \
     DifferentDocumentPairError, SameDocumentError, MatchType
-from plagdef.tests.model.test_extension import _create_seeds
+from plagdef.tests.model.pipeline.test_extension import _create_seeds
 
 
 def test_document_sents():

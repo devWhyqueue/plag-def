@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from plagdef.model.extension import ClusterBuilder
-from plagdef.model.filtering import ClusterFilter
 from plagdef.model.models import Document, DocumentPairMatches, Match, MatchType, Cluster, Fragment
-from plagdef.model.seeding import SeedFinder
+from plagdef.model.pipeline.extension import ClusterBuilder
+from plagdef.model.pipeline.filtering import ClusterFilter
+from plagdef.model.pipeline.seeding import SeedFinder
 
 
 @dataclass(frozen=True)

@@ -3,10 +3,10 @@ from __future__ import annotations
 from collections import Counter
 from unittest.mock import patch
 
-from plagdef.model.extension import ClusterBuilder, Cluster, _build_clusters
 from plagdef.model.models import Sentence
-from plagdef.model.preprocessing import Document
-from plagdef.model.seeding import Seed
+from plagdef.model.pipeline.extension import ClusterBuilder, Cluster, _build_clusters
+from plagdef.model.pipeline.preprocessing import Document
+from plagdef.model.pipeline.seeding import Seed
 
 
 def test_clusters_are_equal():

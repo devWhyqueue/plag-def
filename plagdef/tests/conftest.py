@@ -2,8 +2,8 @@ import stanza
 from pytest import fixture
 
 from plagdef.model.models import DocumentPairMatches, Match, Fragment, MatchType
-from plagdef.model.preprocessing import Preprocessor, Document
-from plagdef.model.seeding import SeedFinder
+from plagdef.model.pipeline.preprocessing import Preprocessor, Document
+from plagdef.model.pipeline.seeding import SeedFinder
 
 
 @fixture(scope="session", autouse=True)

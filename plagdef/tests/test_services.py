@@ -5,7 +5,7 @@ from click import UsageError
 
 from plagdef.model.detection import DocumentMatcher
 from plagdef.model.models import DocumentPairMatches, Match, Fragment, MatchType
-from plagdef.model.preprocessing import Document, UnsupportedLanguageError
+from plagdef.model.pipeline.preprocessing import Document, UnsupportedLanguageError
 from plagdef.repositories import UnsupportedFileFormatError, DocumentPairMatchesJsonRepository, DocumentPickleRepository
 from plagdef.services import find_matches, write_json_reports, _preprocess_docs
 from plagdef.tests.fakes import DocumentFakeRepository, FakeDocumentMatcher

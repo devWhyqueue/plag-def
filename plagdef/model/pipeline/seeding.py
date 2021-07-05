@@ -5,7 +5,7 @@ from typing import Union
 
 from plagdef.model import util
 from plagdef.model.models import Seed
-from plagdef.model.preprocessing import Sentence, Document
+from plagdef.model.pipeline.preprocessing import Sentence, Document
 
 
 class SeedFinder:

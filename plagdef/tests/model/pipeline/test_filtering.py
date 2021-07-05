@@ -21,9 +21,10 @@ from unittest.mock import patch
 
 from networkx import to_dict_of_lists
 
-from plagdef.model.filtering import ClusterFilter, _build_overlap_graph, _resolve_overlaps, _next_overlapping_cluster
 from plagdef.model.models import Cluster, RatedCluster
-from plagdef.tests.model.test_extension import _create_seeds
+from plagdef.model.pipeline.filtering import ClusterFilter, _build_overlap_graph, _resolve_overlaps, \
+    _next_overlapping_cluster
+from plagdef.tests.model.pipeline.test_extension import _create_seeds
 
 
 def test_build_overlap_graph():

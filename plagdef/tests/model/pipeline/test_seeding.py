@@ -1,7 +1,7 @@
 from collections import Counter
 
 from plagdef.model.models import Document
-from plagdef.model.seeding import Seed, _vectorize_sents
+from plagdef.model.pipeline.seeding import Seed, _vectorize_sents
 
 
 def test_match_returns_nothing_if_not_similar(preprocessor, seeder):

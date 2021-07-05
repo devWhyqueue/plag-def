@@ -2,7 +2,7 @@ from collections import Counter
 
 import pytest
 
-from plagdef.model.preprocessing import UnsupportedLanguageError, Document, Preprocessor, _nlp_pipe
+from plagdef.model.pipeline.preprocessing import UnsupportedLanguageError, Document, Preprocessor, _nlp_pipe
 
 
 def test_nlp_model():

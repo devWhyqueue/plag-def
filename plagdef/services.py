@@ -5,7 +5,7 @@ from click import UsageError
 from plagdef.config import settings
 from plagdef.model.detection import DocumentMatcher
 from plagdef.model.models import DocumentPairMatches, Document
-from plagdef.model.preprocessing import UnsupportedLanguageError
+from plagdef.model.pipeline.preprocessing import UnsupportedLanguageError
 from plagdef.repositories import UnsupportedFileFormatError, DocumentPickleRepository
 
 
