@@ -105,6 +105,7 @@ ENV/
 .vscode/
 
 # Personal
-/plagdef/data/result/
+data/
+.pdef
 /.idea/
 Pipfile.lock
