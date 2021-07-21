@@ -38,14 +38,14 @@ def test_document_sents_exclude_common():
 
 def test_documents_are_equal():
     doc1 = Document('doc', 'path/to/doc', 'Some text.')
-    doc2 = Document('doc', 'path/to/doc', 'Some text.')
+    doc2 = Document('doc', 'path/to/other/doc', 'Some text.')
     assert doc1 == doc2
 
 
-def test_documents_are_the_same_if_same_name_and_path():
+def test_documents_are_the_same_if_same_name_and_text():
     docs = set()
     docs.add(Document('doc', 'path/to/doc', 'abc'))
-    docs.add(Document('doc', 'path/to/doc', 'abc'))
+    docs.add(Document('doc', 'path/to/other/doc', 'abc'))
     assert len(docs) == 1
 
 
