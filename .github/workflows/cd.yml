@@ -1,17 +1,13 @@
 name: cd
 
-on:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+on: [ push, pull_request ]
 
 jobs:
     test:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python: [ 3.7, 3.8, 3.9 ]
+                python: [ 3.8, 3.9 ]
         steps:
             -   name: Checkout repo
                 uses: actions/checkout@v2
@@ -33,6 +29,7 @@ jobs:
     publish:
         needs: test
         runs-on: ubuntu-latest
+        if: startsWith(github.ref, 'refs/tags')
         steps:
             -   name: Checkout repo
                 uses: actions/checkout@v2
@@ -40,19 +37,15 @@ jobs:
                 uses: actions/setup-python@v2
                 with:
                     python-version: 3.9
-            -   name: Install pypa/build
-                run: python -m pip install build
-            -   name: Build a binary wheel and a source tarball
-                run: python -m build
             -   name: Publish to PyPI
-                if: startsWith(github.ref, 'refs/tags')
-                uses: pypa/gh-action-pypi-publish@master
+                uses: JRubics/poetry-publish@v1.6
                 with:
-                    password: ${{ secrets.PYPI_API_TOKEN }}
+                    pypi_token: ${{ secrets.PYPI_API_TOKEN }}
 
     sonarcloud:
         needs: test
         runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
         steps:
             -   name: Checkout repo
                 uses: actions/checkout@v2

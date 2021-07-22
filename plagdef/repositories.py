@@ -139,7 +139,7 @@ class PdfReader:
         text = self._extract()
         if self._ocr and self._poor_extraction(text):
             log.warning(f"Poor text extraction in '{self._file.name}' detected! Using OCR...")
-            pages = convert_from_path(self._file, fmt='jpeg', jpegopt='optimize')
+            pages = convert_from_path(self._file, fmt='jpeg')
             text = ''
             for page in pages:
                 img = numpy.array(page)

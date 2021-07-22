@@ -1,7 +1,7 @@
 init: ## initialize environment and install requirements
-	sudo apt-get install libmagic1
-	pip install pipenv
-	pipenv install --dev
+	sudo apt-get install libmagic1 poppler-utils
+	python -m pip install poetry
+	python -m poetry install
 
 clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
@@ -10,19 +10,19 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	pipenv run flake8 plagdef tests
+	poetry run flake8 plagdef tests
 
 test-ci: ## run tests, GUI tests excluded
-	pipenv run pytest
+	poetry run pytest
 
 test-all-ci: ## run tests on every Python version with tox
-	pipenv run tox
+	poetry run tox
 
 coverage-ci: ## check code coverage quickly with the default Python
-	pipenv run coverage erase
-	pipenv run coverage run --source plagdef --omit="*/test*" -m pytest
-	pipenv run coverage report -m
-	pipenv run coverage xml
+	poetry run coverage erase
+	poetry run coverage run --source plagdef --omit="*/test*" -m pytest
+	poetry run coverage report -m
+	poetry run coverage xml
 
 run: ## starts the CLI
-	pipenv run app.py
+	poetry run app.py

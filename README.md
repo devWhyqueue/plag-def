@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/plagdef.svg)](https://badge.fury.io/py/plagdef)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/plagdef)
 ![GitHub](https://img.shields.io/github/license/devWhyqueue/plagdef)
-[![Test](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml/badge.svg)](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml)
+[![Test](https://github.com/devWhyqueue/plagdef/actions/workflows/cd.yml/badge.svg)](https://github.com/devWhyqueue/plagdef/actions/workflows/test.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=devWhyqueue_plagdef&metric=coverage)](https://sonarcloud.io/dashboard?id=devWhyqueue_plagdef)
 
 A tool which makes life hard for students who try to make theirs simple.
@@ -61,7 +61,7 @@ Clone the repo and install dependencies:
 
 ```
 $ git clone git://github.com/devWhyqueue/plagdef
-$ pipenv install --dev
+$ poetry install
 ````
 
 # Publish to PyPI
@@ -69,6 +69,5 @@ $ pipenv install --dev
 In your virtual environment build and upload PlagDef:
 
 ```
-$ python -m build
-$ twine upload dist/*
+$ poetry publish --build
 ````
