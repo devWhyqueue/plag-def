@@ -371,7 +371,9 @@ class SettingsDialog:
     def ocr(self) -> bool:
         return self.widget.ocr_check_box.isChecked()
 
-    def open(self, ocr=settings['ocr'], sim=settings['min_cos_sim']):
+    def open(self, ocr=None, sim=None):
+        ocr = settings['ocr'] if not ocr else None
+        sim = settings['min_cos_sim'] if not sim else None
         self.widget.ocr_check_box.setChecked(ocr)
         self.widget.value_label.setText(str(sim))
         self.widget.sim_slider.setValue(sim * 10)
