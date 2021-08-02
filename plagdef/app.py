@@ -68,7 +68,7 @@ def gui():
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = MyQtApp()
     app.window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple, doc_path_filter=None) \
@@ -78,7 +78,7 @@ def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple, doc
         archive_repo = common_repo = None
         if archive_docdir:
             archive_repo = DocumentFileRepository(
-                Path(str(archive_docdir[0])), recursive=archive_docdir[1])
+                Path(str(archive_docdir[0])), recursive=archive_docdir[1], doc_path_filter=doc_path_filter)
         if common_docdir:
             common_repo = DocumentFileRepository(
                 Path(str(common_docdir[0])), recursive=common_docdir[1])

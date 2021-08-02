@@ -50,11 +50,12 @@ class DocumentFileRepository:
             return (file for file in self.dir_path.iterdir() if file.is_file() and file.suffix != '.pdef')
 
     def list(self) -> set[models.Document]:
-        files = list(self._list_files())
+        files = list(filter(lambda f: not self._doc_path_filter or str(f.resolve()) in self._doc_path_filter,
+                            self._list_files()))
         read_file = partial(self._read_file, lock=Lock())
         docs = thread_map(read_file, files, desc=f"Reading documents in '{self.dir_path}'",
                           unit='doc', total=len(files), max_workers=os.cpu_count())
-        return set(filter(lambda d: d and (not self._doc_path_filter or d.path in self._doc_path_filter), docs))
+        return set(filter(None, docs))
 
     def _read_file(self, file, lock):
         if file.suffix == '.pdf':
