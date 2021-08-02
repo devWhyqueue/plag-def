@@ -20,7 +20,8 @@ Or build it yourself:
 
 ```
 $ git clone git://github.com/devWhyqueue/plagdef
-$ python -m pip install -e .
+$ poetry build
+$ pip install dist/plagdef-{VERSION}.tar.gz
 ````
 
 # Requirements
