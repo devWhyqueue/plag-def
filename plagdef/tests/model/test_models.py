@@ -382,11 +382,24 @@ def test_doc_pair_matches_init_with_matches():
     assert doc_pair_matches._matches == {str(MatchType.VERBATIM): {match1}, str(MatchType.INTELLIGENT): {match2}}
 
 
+def test_doc_pair_matches_from_matches_with_empty_list():
+    doc_pair_matches = DocumentPairMatches.from_matches([])
+    assert doc_pair_matches == []
+
+
+def test_doc_pair_matches_from_matches(matches):
+    match_list = []
+    for match_type in MatchType:
+        [match_list.extend(m.list(match_type)) for m in matches]
+    doc_pair_matches = DocumentPairMatches.from_matches(match_list)
+    assert set(doc_pair_matches) == matches
+
+
 def test_doc_pair_matches_equal_if_docs_are_the_same():
     doc1, doc2 = Document('doc1', 'path/to/doc1', ''), Document('doc2', 'path/to/doc2', '')
     match = Match(MatchType.VERBATIM, Fragment(0, 7, doc1), Fragment(0, 4, doc2))
     doc_pair_matches1 = DocumentPairMatches(doc1, doc2)
-    doc_pair_matches2 = DocumentPairMatches(doc1, doc2, {match})
+    doc_pair_matches2 = DocumentPairMatches(doc2, doc1, {match})
     assert doc_pair_matches1 == doc_pair_matches2
 
 

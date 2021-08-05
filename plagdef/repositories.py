@@ -33,13 +33,13 @@ lock = Lock()
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, recursive=False, lang=settings['lang'], use_ocr=settings['ocr'],
-                 doc_path_filter=None):
-        self.lang = lang
+    def __init__(self, dir_path: Path, recursive=False, lang=None, use_ocr=None, doc_path_filter=None):
+        self.lang = lang if lang else settings['lang']
         self.dir_path = dir_path
         self._recursive = recursive
         self._doc_path_filter = doc_path_filter
-        self._ocr = easyocr.Reader(['de', 'en']) if use_ocr else None
+        enable_ocr = use_ocr if use_ocr else settings['ocr']
+        self._ocr = easyocr.Reader(['de', 'en']) if enable_ocr else None
         if not dir_path.is_dir():
             raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
 
@@ -58,7 +58,7 @@ class DocumentFileRepository:
         return set(filter(None, docs))
 
     def _read_file(self, file, lock):
-        if file.suffix == '.pdf':
+        if file.suffix.lower() == '.pdf':
             reader = PdfReader(file, self._ocr, lock)
             text = reader.extract_text()
             return models.Document(file.stem, str(file.resolve()), text)

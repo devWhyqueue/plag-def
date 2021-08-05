@@ -288,6 +288,18 @@ class DocumentPairMatches:
         if matches:
             self.update(matches)
 
+    @classmethod
+    def from_matches(cls, matches: [Match]) -> [DocumentPairMatches]:
+        doc_pair_matches = []
+        dpm_dict = defaultdict(list)
+        for match in matches:
+            frag1, frag2 = match.frag_pair
+            dpm_dict[frozenset({frag1.doc, frag2.doc})].append(match)
+        for pair in dpm_dict.keys():
+            doc1, doc2 = pair
+            doc_pair_matches.append(DocumentPairMatches(doc1, doc2, dpm_dict[pair]))
+        return doc_pair_matches
+
     def update(self, matches: Iterable):
         [self.add(match) for match in matches]
 
@@ -311,10 +323,10 @@ class DocumentPairMatches:
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.doc1 == other.doc1 and self.doc2 == other.doc2
+            return {self.doc1, self.doc2} == {other.doc1, other.doc2}
 
     def __hash__(self):
-        return hash((self.doc1, self.doc2))
+        return hash(frozenset({self.doc1, self.doc2}))
 
 
 class MatchType(Enum):

@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
 
 from plagdef.config import settings
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
-from plagdef.model.models import MatchType
+from plagdef.model import models
 from plagdef.model.util import version, truncate
 
 UI_FILES = {
@@ -222,9 +222,9 @@ class ResultView(View):
         self.doc_pair_matches = data
         self.widget.doc_pairs_label.setText(f"Found {len(data) if len(data) else 'no'} suspicious document pair"
                                             f"{'s' if len(data) > 1 else ''}.")
-        self._set_table_model(self.widget.verbatim_results, MatchType.VERBATIM, data)
-        self._set_table_model(self.widget.intelligent_results, MatchType.INTELLIGENT, data)
-        self._set_table_model(self.widget.summary_results, MatchType.SUMMARY, data)
+        self._set_table_model(self.widget.verbatim_results, models.MatchType.VERBATIM, data)
+        self._set_table_model(self.widget.intelligent_results, models.MatchType.INTELLIGENT, data)
+        self._set_table_model(self.widget.summary_results, models.MatchType.SUMMARY, data)
         self._hide_empty_tables()
 
     def _set_table_model(self, table, match_type, pairs):
@@ -239,24 +239,24 @@ class ResultView(View):
         self.widget.doc_pair_tabs.setTabVisible(2, bool(self.widget.summary_results.model().rowCount()))
 
     @property
-    def selected_matches(self):
+    def selected_matches(self) -> list[models.DocumentPairMatches]:
         matches = []
         verbatim_indices = self.widget.verbatim_results.selectionModel().selectedIndexes()
         verbatim_indices = filter(lambda i: i.column() == 0, verbatim_indices)
         for index in verbatim_indices:
             verbatim_matches = self.widget.verbatim_results.model().doc_pair_matches(index)
-            matches.append(verbatim_matches)
+            matches.extend(verbatim_matches.matches)
         intelligent_indices = self.widget.intelligent_results.selectionModel().selectedIndexes()
         intelligent_indices = filter(lambda i: i.column() == 0, intelligent_indices)
         for index in intelligent_indices:
             intelligent_matches = self.widget.intelligent_results.model().doc_pair_matches(index)
-            matches.append(intelligent_matches)
+            matches.extend(intelligent_matches.matches)
         summary_indices = self.widget.summary_results.selectionModel().selectedIndexes()
         summary_indices = filter(lambda i: i.column() == 0, summary_indices)
         for index in summary_indices:
             summary_matches = self.widget.summary_results.model().doc_pair_matches(index)
-            matches.append(summary_matches)
-        return matches
+            matches.extend(summary_matches.matches)
+        return models.DocumentPairMatches.from_matches(matches)
 
     def register_for_signals(self, export=None, again=None, select_pair=None):
         self.widget.export_button.clicked.connect(lambda: export())
@@ -372,8 +372,8 @@ class SettingsDialog:
         return self.widget.ocr_check_box.isChecked()
 
     def open(self, ocr=None, sim=None):
-        ocr = settings['ocr'] if not ocr else None
-        sim = settings['min_cos_sim'] if not sim else None
+        ocr = settings['ocr'] if not ocr else ocr
+        sim = settings['min_cos_sim'] if not sim else sim
         self.widget.ocr_check_box.setChecked(ocr)
         self.widget.value_label.setText(str(sim))
         self.widget.sim_slider.setValue(sim * 10)

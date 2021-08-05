@@ -127,6 +127,20 @@ def test_list_with_doc_dir_containing_pdf(tmp_path):
     assert 'This also is a document.\n' in [doc.text for doc in docs]
 
 
+def test_list_with_doc_dir_containing_pdf_with_uppercase_file_suffix(tmp_path):
+    doc1 = FPDF()
+    doc1.add_page()
+    doc1.set_font('helvetica', size=12)
+    doc1.cell(w=0, txt='This is a PDF file containing one sentence.')
+    doc1.output(f'{tmp_path}/doc1.PDF')
+    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
+        f.write('This also is a document.\n')
+    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
+    docs = repo.list()
+    assert 'This is a PDF file containing one sentence.' in [doc.text for doc in docs]
+    assert 'This also is a document.\n' in [doc.text for doc in docs]
+
+
 def test_list_with_doc_dir_containing_pdf_with_no_text(tmp_path):
     doc1 = FPDF()
     doc1.add_page()

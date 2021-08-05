@@ -17,7 +17,7 @@ class DocumentPairMatches:
     matches: list[models.Match]
 
     @classmethod
-    def from_model(cls, model: models.DocumentPairMatches, match_type):
+    def from_model(cls, model: models.DocumentPairMatches, match_type) -> DocumentPairMatches:
         typed_matches = model.list(match_type)
         if len(typed_matches):
             d1 = model.doc1 if model.doc1.name < model.doc2.name else model.doc2
