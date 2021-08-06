@@ -81,7 +81,7 @@ def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> 
         if common_docdir:
             common_repo = DocumentFileRepository(
                 Path(str(common_docdir[0])), recursive=common_docdir[1])
-            settings['last_common_docdir'] = common_docdir
+        settings['last_common_docdir'] = common_docdir
         return services.find_matches(doc_repo, archive_repo=archive_repo, common_doc_repo=common_repo)
     except NotADirectoryError as e:
         raise UsageError(str(e)) from e
@@ -90,7 +90,10 @@ def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> 
 def reanalyze_pair(doc1: Document, doc2: Document, sim: float):
     ser, last_sim = settings['ser'], settings['min_cos_sim']
     settings.update({'ser': False, 'min_cos_sim': sim, 'min_dice_sim': sim, 'min_cluster_cos_sim': sim})
-    common_repo = settings['last_common_docdir'] if 'last_common_docdir' in settings else None
+    common_repo = None
+    if 'last_common_docdir' in settings and settings['last_common_docdir']:
+        common_repo = DocumentFileRepository(
+            Path(str(settings['last_common_docdir'][0])), recursive=settings['last_common_docdir'][1])
     doc_repo = DocumentPairRepository(Document(doc1.name, doc1.path, doc1.text),
                                       Document(doc2.name, doc2.path, doc2.text))
     matches = services.find_matches(doc_repo, common_doc_repo=common_repo)
