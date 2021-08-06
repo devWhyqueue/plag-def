@@ -37,8 +37,8 @@ class MyQtApp(QApplication):
         pool = QThreadPool.globalInstance()
         pool.start(worker)
 
-    def reanalyze_pair(self, doc1_path: str, doc2_path: str, sim: float, on_success, on_error):
-        worker = Worker(reanalyze_pair, doc1_path, doc2_path, sim)
+    def reanalyze_pair(self, doc1, doc2, sim: float, on_success, on_error):
+        worker = Worker(reanalyze_pair, doc1, doc2, sim)
         worker.signals.result.connect(on_success)
         worker.signals.error.connect(on_error)
         pool = QThreadPool.globalInstance()

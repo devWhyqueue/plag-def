@@ -9,9 +9,9 @@ from click import UsageError
 
 from plagdef import services
 from plagdef.config import settings
-from plagdef.model.models import DocumentPairMatches
+from plagdef.model.models import DocumentPairMatches, Document
 from plagdef.model.reporting import generate_text_report
-from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJsonRepository
+from plagdef.repositories import DocumentFileRepository, DocumentPairMatchesJsonRepository, DocumentPairRepository
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
@@ -71,30 +71,30 @@ def gui():
     sys.exit(app.exec())
 
 
-def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple, doc_path_filter=None) \
-    -> list[DocumentPairMatches]:
+def find_matches(docdir: tuple, archive_docdir: tuple, common_docdir: tuple) -> list[DocumentPairMatches]:
     try:
-        doc_repo = DocumentFileRepository(Path(str(docdir[0])), recursive=docdir[1], doc_path_filter=doc_path_filter)
+        doc_repo = DocumentFileRepository(Path(str(docdir[0])), recursive=docdir[1])
         archive_repo = common_repo = None
         if archive_docdir:
             archive_repo = DocumentFileRepository(
-                Path(str(archive_docdir[0])), recursive=archive_docdir[1], doc_path_filter=doc_path_filter)
+                Path(str(archive_docdir[0])), recursive=archive_docdir[1])
         if common_docdir:
             common_repo = DocumentFileRepository(
                 Path(str(common_docdir[0])), recursive=common_docdir[1])
-        settings.update(
-            {'last_docdir': docdir, 'last_archive_docdir': archive_docdir, 'last_common_docdir': common_docdir})
+            settings['last_common_docdir'] = common_docdir
         return services.find_matches(doc_repo, archive_repo=archive_repo, common_doc_repo=common_repo)
     except NotADirectoryError as e:
         raise UsageError(str(e)) from e
 
 
-def reanalyze_pair(doc1_path: str, doc2_path: str, sim: float):
-    last_sim = settings['min_cos_sim']
+def reanalyze_pair(doc1: Document, doc2: Document, sim: float):
+    ser, last_sim = settings['ser'], settings['min_cos_sim']
     settings.update({'ser': False, 'min_cos_sim': sim, 'min_dice_sim': sim, 'min_cluster_cos_sim': sim})
-    matches = find_matches(settings['last_docdir'], settings['last_archive_docdir'], settings['last_common_docdir'],
-                           [doc1_path, doc2_path])
-    settings.update({'ser': True, 'min_cos_sim': last_sim, 'min_dice_sim': last_sim, 'min_cluster_cos_sim': last_sim})
+    common_repo = settings['last_common_docdir'] if 'last_common_docdir' in settings else None
+    doc_repo = DocumentPairRepository(Document(doc1.name, doc1.path, doc1.text),
+                                      Document(doc2.name, doc2.path, doc2.text))
+    matches = services.find_matches(doc_repo, common_doc_repo=common_repo)
+    settings.update({'ser': ser, 'min_cos_sim': last_sim, 'min_dice_sim': last_sim, 'min_cluster_cos_sim': last_sim})
     return matches
 
 

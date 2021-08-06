@@ -33,11 +33,10 @@ lock = Lock()
 
 
 class DocumentFileRepository:
-    def __init__(self, dir_path: Path, recursive=False, lang=None, use_ocr=None, doc_path_filter=None):
+    def __init__(self, dir_path: Path, recursive=False, lang=None, use_ocr=None):
         self.lang = lang if lang else settings['lang']
         self.dir_path = dir_path
         self._recursive = recursive
-        self._doc_path_filter = doc_path_filter
         enable_ocr = use_ocr if use_ocr else settings['ocr']
         self._ocr = easyocr.Reader(['de', 'en']) if enable_ocr else None
         if not dir_path.is_dir():
@@ -50,8 +49,7 @@ class DocumentFileRepository:
             return (file for file in self.dir_path.iterdir() if file.is_file() and file.suffix != '.pdef')
 
     def list(self) -> set[models.Document]:
-        files = list(filter(lambda f: not self._doc_path_filter or str(f.resolve()) in self._doc_path_filter,
-                            self._list_files()))
+        files = list(self._list_files())
         read_file = partial(self._read_file, lock=Lock())
         docs = thread_map(read_file, files, desc=f"Reading documents in '{self.dir_path}'",
                           unit='doc', total=len(files), max_workers=os.cpu_count())
@@ -73,6 +71,14 @@ class DocumentFileRepository:
             except (UnicodeDecodeError, LookupError, MagicException):
                 log.error(f"The file '{file.name}' has an unsupported encoding and cannot be read.")
                 log.debug('Following error occurred:', exc_info=True)
+
+
+class DocumentPairRepository:
+    def __init__(self, doc1: models.Document, doc2: models.Document):
+        self._docs = {doc1, doc2}
+
+    def list(self) -> set[models.Document]:
+        return self._docs
 
 
 class DocumentPairMatchesJsonRepository:

@@ -286,12 +286,12 @@ class MatchesDialog:
         self.widget.value_label.setText(str(sim / 10))
 
     @property
-    def doc1_path(self):
-        return self._doc_pair_matches.doc1.path
+    def doc1(self):
+        return self._doc_pair_matches.doc1
 
     @property
-    def doc2_path(self):
-        return self._doc_pair_matches.doc2.path
+    def doc2(self):
+        return self._doc_pair_matches.doc2
 
     @property
     def sim_threshold(self) -> float:

@@ -180,7 +180,7 @@ class ResultController:
 
     def on_reanalyze_click(self):
         self.matches_dialog.reanalyzing(True)
-        main.app.reanalyze_pair(self.matches_dialog.doc1_path, self.matches_dialog.doc2_path,
+        main.app.reanalyze_pair(self.matches_dialog.doc1, self.matches_dialog.doc2,
                                 self.matches_dialog.sim_threshold, self._on_reanalyze_success, self._on_reanalyze_error)
 
     def _on_reanalyze_success(self, matches: list[models.DocumentPairMatches]):
