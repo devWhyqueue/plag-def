@@ -1,36 +1,6 @@
-from pathlib import Path
-from unicodedata import normalize
-
-import pytest
 from fpdf import FPDF
 
 from plagdef.repositories import DocumentFileRepository, PdfReader
-
-
-def test_init_with_nonexistent_doc_dir_fails():
-    with pytest.raises(NotADirectoryError):
-        DocumentFileRepository(Path('some/wrong/path'), lang='eng', use_ocr=True)
-
-
-def test_init_with_file_fails(tmp_path):
-    file = tmp_path / 'doc1.txt'
-    with file.open('w', encoding='utf-8') as f:
-        f.write('Some content.\n')
-    with pytest.raises(NotADirectoryError):
-        DocumentFileRepository(file, lang='eng', use_ocr=True)
-
-
-def test_list_documents(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
-        f.write('This is a document.\n')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('This also is a document.\n')
-    Path(f'{tmp_path}/a/dir/that/should/not/be/included').mkdir(parents=True)
-    with Path((f'{tmp_path}/a/dir/that/should/not/be/included/doc3.txt')).open('w', encoding='utf-8') as f:
-        f.write('The third document.\n')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
-    docs = repo.list()
-    assert len(docs) == 2
 
 
 def test_list_documents_ignores_pdef_files(tmp_path):
@@ -41,76 +11,6 @@ def test_list_documents_ignores_pdef_files(tmp_path):
     repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
     docs = repo.list()
     assert len(docs) == 1
-
-
-def test_list_documents_normalizes_texts(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
-        # The 'ä' consists of a small letter a and a combining diaeresis
-        f.write('Nicht nur ähnlich, sondern gleich.')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('Nicht nur ähnlich, sondern gleich.')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
-    doc1, doc2 = repo.list()
-    assert doc1.text == doc2.text
-
-
-def test_list_documents_removes_bom(tmp_path):
-    with (tmp_path / 'doc1.txt').open('wb') as f:
-        f.write(b'\xef\xbb\xbfDocuments should be identical although one starts with BOM.')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('Documents should be identical although one starts with BOM.')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
-    doc1, doc2 = repo.list()
-    assert doc1.text == doc2.text
-
-
-def test_list_with_file_containing_special_characters(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
-        f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('This also is a document.\n')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
-    docs = repo.list()
-    assert len(docs) == 2
-    assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
-
-
-@pytest.mark.skipif('sys.platform != "win32"')
-def test_list_with_doc_dir_containing_ansi_file_creates_document(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='ANSI') as f:
-        f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('This also is a document.\n')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
-    docs = repo.list()
-    assert len(docs) == 2
-    assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
-
-
-def test_list_with_doc_dir_containing_iso_8559_1_file_creates_documents(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='ISO-8859-1') as f:
-        f.write('These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n')
-    with (tmp_path / 'doc2.txt').open('w', encoding='utf-8') as f:
-        f.write('Hello world, Καλημέρα κόσμε, コンニチハ')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True)
-    docs = repo.list()
-    assert len(docs) == 2
-    assert 'These are typical German umlauts: ä, ö, ü, ß, é and â are rather French.\n' in [doc.text for doc in docs]
-    assert normalize('NFC', 'Hello world, Καλημέρα κόσμε, コンニチハ') in [doc.text for doc in docs]
-
-
-def test_list_recursive_creates_documents(tmp_path):
-    with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
-        f.write('This is a document.\n')
-    Path(f'{tmp_path}/a/subdir').mkdir(parents=True)
-    with Path((f'{tmp_path}/a/subdir/doc2.txt')).open('w', encoding='utf-8') as f:
-        f.write('This also is a document.\n')
-    Path(f'{tmp_path}/another/sub/even/deeper').mkdir(parents=True)
-    with Path((f'{tmp_path}/another/sub/even/deeper/doc3.txt')).open('w', encoding='utf-8') as f:
-        f.write('The third document.\n')
-    repo = DocumentFileRepository(tmp_path, lang='eng', use_ocr=True, recursive=True)
-    docs = repo.list()
-    assert len(docs) == 3
 
 
 def test_list_with_doc_dir_containing_pdf(tmp_path):
@@ -151,6 +51,11 @@ def test_list_with_doc_dir_containing_pdf_with_no_text(tmp_path):
     docs = repo.list()
     assert len(docs) == 2
     assert 'This also is a document.\n' in [doc.text for doc in docs]
+
+
+# TODO: Implement
+def test_list_ignores_unsupported_binary_files():
+    pass
 
 
 def test_pdf_reader_poor_extraction():

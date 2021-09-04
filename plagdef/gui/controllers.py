@@ -18,7 +18,7 @@ from plagdef.model import models
 class HomeController:
     def __init__(self):
         self.view = HomeView()
-        self.settings_dialog = SettingsDialog()
+        self.settings_controller = SettingsController()
         self.archive_dir_dialog = FileDialog()
         self.docs_dir_dialog = FileDialog()
         self.common_dir_dialog = FileDialog()
@@ -49,11 +49,12 @@ class HomeController:
                 MessageDialog('The selected folder contains no match files.')
 
     def _on_settings_click(self):
-        self.settings_dialog.open()
-        settings.update({'ocr': self.settings_dialog.ocr,
-                         'min_cos_sim': self.settings_dialog.similarity_threshold,
-                         'min_dice_sim': self.settings_dialog.similarity_threshold,
-                         'min_cluster_cos_sim': self.settings_dialog.similarity_threshold})
+        self.settings_controller.view.open()
+        settings.update({'ocr': self.settings_controller.view.ocr,
+                         'download_path': self.settings_controller.view.download_path,
+                         'min_cos_sim': self.settings_controller.view.similarity_threshold,
+                         'min_dice_sim': self.settings_controller.view.similarity_threshold,
+                         'min_cluster_cos_sim': self.settings_controller.view.similarity_threshold})
 
     def _on_select_archive_dir(self):
         if self.archive_dir_dialog.open():
@@ -106,6 +107,19 @@ class HomeController:
             main.app.window.switch_to(ErrorView,
                                       'An error occurred. Please refer to the command line for more details.')
             raise error[1]
+
+
+class SettingsController:
+    def __init__(self):
+        self.view = SettingsDialog()
+        self._download_dir_dialog = FileDialog()
+        self.view.register_for_signals(self._on_download_path_select)
+
+    def _on_download_path_select(self):
+        if self.view.download_path:
+            self.view.download_dir_selected(None)
+        elif self._download_dir_dialog.open():
+            self.view.download_dir_selected(self._download_dir_dialog.selected_dir)
 
 
 class LoadingController:

@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 from typing import Union
 
-from plagdef.model import util
+from plagdef import util
 from plagdef.model.models import Seed
 from plagdef.model.pipeline.preprocessing import Sentence, Document
 

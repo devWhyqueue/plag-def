@@ -7,7 +7,7 @@ from PySide6.QtGui import QColor
 
 from plagdef.model import models
 from plagdef.model.models import MatchType
-from plagdef.model.util import truncate
+from plagdef.util import truncate
 
 
 @dataclass(frozen=True)

@@ -8,7 +8,14 @@ from functools import total_ordering
 
 from sortedcontainers import SortedSet
 
-from plagdef.model import util
+from plagdef import util
+
+
+@dataclass(frozen=True)
+class File:
+    name: str
+    content: any
+    binary: bool
 
 
 class Document:
@@ -17,6 +24,7 @@ class Document:
         self.path = path
         self.text = text
         self.vocab = Counter()  # <lemma, sent_freq>
+        self.urls = set()
         self._sents = SortedSet()
 
     def add_sent(self, sent: Sentence):
@@ -43,10 +51,10 @@ class Document:
         return f"Document('{self.name}')"
 
     def __getstate__(self):
-        return self.name, self.path, self.text, self.vocab, tuple(self._sents)
+        return self.name, self.path, self.text, self.vocab, self.urls, tuple(self._sents)
 
     def __setstate__(self, state):
-        self.name, self.path, self.text, self.vocab, sents = state
+        self.name, self.path, self.text, self.vocab, self.urls, sents = state
         self._sents = SortedSet()
         for sent in sents:
             sent.doc = self

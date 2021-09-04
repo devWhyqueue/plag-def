@@ -2,7 +2,8 @@ from collections import Counter
 
 import pytest
 
-from plagdef.model.pipeline.preprocessing import UnsupportedLanguageError, Document, Preprocessor, _nlp_pipe
+from plagdef.model.pipeline.preprocessing import UnsupportedLanguageError, Document, Preprocessor, _nlp_pipe, \
+    _extract_urls
 
 
 def test_nlp_model():
@@ -276,3 +277,37 @@ def test_tag_common_sents_with_non_identical_sents(preprocessor):
     assert len(doc1.sents(include_common=True)) == 2
     assert doc1.sents(include_common=True)[1].common
     assert doc1.vocab == Counter({'this': 1, 'be': 1, 'the': 1, 'first': 1, 'document': 1})
+
+
+def test_extract_urls():
+    doc = Document("doc", "path/to/doc", "Google.com is the most popular search engine, www.ecosia.com is more "
+                                         "ecologically friendly and https://bing.com is the default engine of "
+                                         "Microsoft Edge.")
+    _extract_urls(doc)
+    assert doc.urls == {"https://Google.com", "https://www.ecosia.com", "https://bing.com"}
+
+
+def test_extract_urls_if_urls_present(preprocessor):
+    doc1 = Document("doc1", "path/to/doc", "This is an URL: www.google.de/search?q=python")
+    doc1.urls = {"https://www.bing.de"}
+    doc2 = Document('doc2', 'path/to/doc2', 'Another document for good measure.')
+    preprocessor.preprocess('eng', [doc1], [doc2])
+    assert doc1.urls == {"https://www.bing.de", "https://www.google.de/search?q=python"}
+
+
+def test_extract_urls_with_subpath():
+    doc = Document("doc", "path/to/doc", "This is an URL: www.google.de/search?q=python")
+    _extract_urls(doc)
+    assert doc.urls == {"https://www.google.de/search?q=python"}
+
+
+def test_extract_urls_filters_duplicates():
+    doc = Document("doc", "path/to/doc", "These URLs are both the same: https://google.de, google.de")
+    _extract_urls(doc)
+    assert doc.urls == {"https://google.de"}
+
+
+def test_url_detection_normalizes_address():
+    doc = Document("doc", "path/to/doc", "Some URLs: google.de, https://google.de/abc and google.de/abc/")
+    _extract_urls(doc)
+    assert doc.urls == {'https://google.de/abc', 'https://google.de'}

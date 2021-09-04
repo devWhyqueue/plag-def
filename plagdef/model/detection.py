@@ -12,7 +12,7 @@ from plagdef.model.pipeline.extension import ClusterBuilder
 from plagdef.model.pipeline.filtering import ClusterFilter
 from plagdef.model.pipeline.preprocessing import Preprocessor
 from plagdef.model.pipeline.seeding import SeedFinder
-from plagdef.model.util import parallelize
+from plagdef.util import parallelize
 
 log = logging.getLogger(__name__)
 

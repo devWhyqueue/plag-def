@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from plagdef.model.models import Document
@@ -23,3 +24,10 @@ class FakeDocumentMatcher:
         self.lang = lang
         self.preprocessed_docs = docs
         self.common_docs = common_docs
+
+
+@dataclass(frozen=True)
+class FakeResponse:
+    headers: dict
+    content: bytes
+    text: str

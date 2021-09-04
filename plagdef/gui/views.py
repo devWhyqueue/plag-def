@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QButtonGroup, QMainWindow, QFileDialog, QDialog
 from plagdef.config import settings
 from plagdef.gui.model import ResultsTableModel, DocumentPairMatches
 from plagdef.model import models
-from plagdef.model.util import version, truncate
+from plagdef.util import version, truncate
 
 UI_FILES = {
     'main_window': pkg_resources.resource_filename(__name__, 'ui/main_window.ui'),
@@ -371,13 +371,26 @@ class SettingsDialog:
     def ocr(self) -> bool:
         return self.widget.ocr_check_box.isChecked()
 
-    def open(self, ocr=None, sim=None):
+    @property
+    def download_path(self) -> bool:
+        return self.widget.es_line_edit.text()
+
+    def register_for_signals(self, select_download_path=None):
+        self.widget.es_button.clicked.connect(lambda: select_download_path())
+
+    def open(self, ocr=None, sim=None, download_path=None):
         ocr = settings['ocr'] if not ocr else ocr
         sim = settings['min_cos_sim'] if not sim else sim
+        download_path = settings['download_path'] if not download_path else download_path
         self.widget.ocr_check_box.setChecked(ocr)
+        self.widget.es_line_edit.setText(download_path)
         self.widget.value_label.setText(str(sim))
         self.widget.sim_slider.setValue(sim * 10)
         self.widget.exec_()
+
+    def download_dir_selected(self, dir_path):
+        self.widget.es_button.setText("Open..." if not dir_path else "Clear")
+        self.widget.es_line_edit.setText(dir_path)
 
 
 def _load_ui_file(path: Path) -> QMainWindow:

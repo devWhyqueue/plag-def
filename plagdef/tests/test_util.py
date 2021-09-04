@@ -1,4 +1,4 @@
-from plagdef.model.util import cos_sim, dice_sim, truncate
+from plagdef.util import cos_sim, dice_sim, truncate
 
 
 def test_truncate():

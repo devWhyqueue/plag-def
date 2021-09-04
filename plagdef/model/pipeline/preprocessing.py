@@ -3,10 +3,12 @@ from __future__ import annotations
 import os
 from collections import Counter
 from functools import partial
+from urllib.parse import urlparse
 
 import stanza
 from stanza import Pipeline
 from tqdm.contrib.concurrent import thread_map
+from urlextract import URLExtract
 
 from plagdef.model import stopwords
 from plagdef.model.models import Document, Sentence, Word
@@ -51,6 +53,7 @@ class Preprocessor:
                         doc.vocab[lemma] += 1
         self._join_small_sentences(doc)
         self._remove_small_sentences(doc)
+        _extract_urls(doc)
 
     def _join_small_sentences(self, doc: Document):
         sents = doc.sents(include_common=True)
@@ -83,6 +86,12 @@ class Preprocessor:
                 sent_count -= 1
             idx += 1
         doc.vocab += Counter()  # Remove zero counts
+
+
+def _extract_urls(doc: Document, extractor=URLExtract()):
+    extractor.update_when_older(7)
+    urls = extractor.find_urls(doc.text, only_unique=True, check_dns=True)
+    doc.urls.update({urlparse(url, "https").geturl().rstrip("/").replace("///", "//") for url in urls})
 
 
 def _nlp_pipe(lang: str) -> Pipeline:
