@@ -5,6 +5,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
 from functools import total_ordering
+from pathlib import Path
 
 from sortedcontainers import SortedSet
 
@@ -13,7 +14,7 @@ from plagdef import util
 
 @dataclass(frozen=True)
 class File:
-    name: str
+    path: Path
     content: any
     binary: bool
 

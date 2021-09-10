@@ -36,8 +36,8 @@ def test_list(tmp_path):
     repo = FileRepository(tmp_path)
     files = repo.list()
     assert len(files) == 2
-    assert files == {File("doc1.pdf", Path(f'{tmp_path}/doc1.pdf').read_bytes(), True),
-                     File("doc2.txt", "This is a text file.", False)}
+    assert files == {File(Path(f'{tmp_path}/doc1.pdf'), Path(f'{tmp_path}/doc1.pdf').read_bytes(), True),
+                     File(Path(tmp_path / 'doc2.txt'), "This is a text file.", False)}
 
 
 def test_list_normalizes_texts(tmp_path):
@@ -101,7 +101,7 @@ def test_list_with_doc_dir_containing_iso_8559_1_file(tmp_path):
 
 def test_list_recursive(tmp_path):
     with (tmp_path / 'doc1.txt').open('w', encoding='utf-8') as f:
-        f.write('This is a document.\n')
+        f.write('This is a document.')
     Path(f'{tmp_path}/a/subdir').mkdir(parents=True)
     with Path((f'{tmp_path}/a/subdir/doc2.txt')).open('w', encoding='utf-8') as f:
         f.write('This also is a document.\n')
@@ -114,7 +114,7 @@ def test_list_recursive(tmp_path):
 
 
 def test_save(tmp_path):
-    file = File("doc.txt", "Hello World!", False)
+    file = File(Path(tmp_path / "doc.txt"), "Hello World!", False)
     file_repo = FileRepository(tmp_path)
     file_repo.save(file)
     assert Path(tmp_path / "doc.txt").read_text() == "Hello World!"
@@ -122,23 +122,24 @@ def test_save(tmp_path):
 
 def test_save_binary(tmp_path):
     content = urandom(128)
-    file = File("doc.pdef", content, True)
+    file = File(Path(tmp_path / "doc.pdef"), content, True)
     file_repo = FileRepository(tmp_path)
     file_repo.save(file)
     assert Path(tmp_path / "doc.pdef").read_bytes() == content
 
 
 def test_save_if_file_exists(tmp_path):
-    file = File("doc.txt", "Hello World!", False)
+    file = File(Path(tmp_path / "doc.txt"), "Hello World!", False)
     file_repo = FileRepository(tmp_path)
     file_repo.save(file)
     with pytest.raises(FileExistsError):
-        file_repo.save(File("doc.txt", "Other content.", False))
+        file_repo.save(File(Path(tmp_path / "doc.txt"), "Other content.", False))
     assert Path(tmp_path / "doc.txt").read_text() == "Hello World!"
 
 
 def test_save_all(tmp_path):
-    files = {File("doc1.txt", "Hello World!", False), File("doc2.txt", "Heyho World!", False)}
+    files = {File(Path(tmp_path / "doc1.txt"), "Hello World!", False),
+             File(Path(tmp_path / "doc2.txt"), "Heyho World!", False)}
     file_repo = FileRepository(tmp_path)
     file_repo.save_all(files)
     assert len(list(Path(tmp_path).iterdir())) == 2

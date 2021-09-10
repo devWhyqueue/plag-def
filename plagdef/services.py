@@ -36,11 +36,11 @@ def find_matches(doc_repo, archive_repo=None, common_doc_repo=None, config=setti
 
 
 def _preprocess_docs(doc_matcher, lang, use_serialization, doc_repo, common_doc_repo=None) -> set[Document]:
-    common_dir_path = common_doc_repo.dir_path if common_doc_repo else None
+    common_dir_path = common_doc_repo.base_path if common_doc_repo else None
     common_docs = common_doc_repo.list() if common_doc_repo else None
     docs = doc_repo.list()
     if use_serialization:
-        doc_ser = DocumentPickleRepository(doc_repo.dir_path, common_dir_path)
+        doc_ser = DocumentPickleRepository(doc_repo.base_path, common_dir_path)
         prep_docs = {d for d in doc_ser.list() if d in docs}
         unprep_docs = docs.difference(prep_docs)
         doc_matcher.preprocess(lang, unprep_docs, common_docs)
@@ -53,7 +53,7 @@ def _preprocess_docs(doc_matcher, lang, use_serialization, doc_repo, common_doc_
 
 
 def _save_all_external_sources(docs, download_path):
-    external_sources = download_all_external_sources(docs)
+    external_sources = download_all_external_sources(docs, Path(download_path))
     external_sources_repo = FileRepository(Path(download_path))
     external_sources_repo.save_all(external_sources)
 

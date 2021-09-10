@@ -32,21 +32,21 @@ jsonpickle.set_encoder_options('json', indent=4)
 
 
 class FileRepository:
-    def __init__(self, dir_path: Path, recursive=False):
-        self.dir_path = dir_path
+    def __init__(self, base_path: Path, recursive=False):
+        self.base_path = base_path
         self._recursive = recursive
-        if not dir_path.is_dir():
-            raise NotADirectoryError(f'The given path {dir_path} does not point to an existing directory!')
+        if not base_path.is_dir():
+            raise NotADirectoryError(f'The given path {base_path} does not point to an existing directory!')
 
     def list(self) -> set[models.File]:
         files = set()
-        f_gen = self.dir_path.rglob('*') if self._recursive else self.dir_path.iterdir()
+        f_gen = self.base_path.rglob('*') if self._recursive else self.base_path.iterdir()
         for f in f_gen:
             if f.is_file():
                 binary = not magic.Magic(mime=True).from_buffer(open(f, 'rb').read(2048)).startswith("text")
                 try:
                     content = f.read_bytes() if binary else self._read_text(f)
-                    files.add(models.File(f.name, content, binary))
+                    files.add(models.File(f, content, binary))
                 except UnsupportedFileFormatError as e:
                     log.error(e)
                     log.debug('Following error occurred:', exc_info=True)
@@ -64,22 +64,21 @@ class FileRepository:
                 f"The file '{file_path.name}' has an unsupported encoding and cannot be read.")
 
     def save(self, file: models.File):
-        file_path = Path(f"{self.dir_path}/{file.name}")
-        if file_path.exists():
-            raise FileExistsError(f'The file "{file_path}" already exists!')
+        if file.path.exists():
+            raise FileExistsError(f'The file "{file.path.name}" already exists!')
         if file.binary:
-            with Path(file_path).open('wb') as f:
+            with file.path.open('wb') as f:
                 f.write(file.content)
         else:
-            with Path(file_path).open('w', encoding="utf-8") as f:
+            with file.path.open('w', encoding="utf-8") as f:
                 f.write(file.content)
 
     def save_all(self, files: set[models.File]):
         for file in files:
             try:
                 self.save(file)
-            except FileExistsError:
-                log.warning(f'Ignoring already existing external source "{file.name}".')
+            except FileExistsError as e:
+                log.debug(e)
 
 
 class DocumentFileRepository:
@@ -90,28 +89,26 @@ class DocumentFileRepository:
         self._ocr = easyocr.Reader(['de', 'en']) if enable_ocr else None
 
     @property
-    def dir_path(self):
-        return self._file_repo.dir_path
+    def base_path(self):
+        return self._file_repo.base_path
 
     def list(self) -> set[models.Document]:
-        files = list(filter(lambda f: not f.name.lower().endswith(".pdef"), self._file_repo.list()))
+        files = list(filter(lambda f: not f.path.suffix.lower() == '.pdef', self._file_repo.list()))
         read_file = partial(self._create_doc, lock=Lock())
-        docs = thread_map(read_file, files, desc=f"Reading documents in '{self.dir_path}'",
+        docs = thread_map(read_file, files, desc=f"Reading documents in '{self.base_path}'",
                           unit='doc', total=len(files), max_workers=os.cpu_count())
         return set(filter(None, docs))
 
     def _create_doc(self, file, lock):
-        name = file.name.rsplit(".", 1)[0]
-        doc_path = Path(f"{self.dir_path}/{file.name}").resolve()
-        if file.name.lower().endswith('.pdf'):
-            reader = PdfReader(doc_path, self._ocr, lock)
+        if file.path.suffix.lower() == '.pdf':
+            reader = PdfReader(file.path, self._ocr, lock)
             text = reader.extract_text()
-            doc = models.Document(name, str(doc_path), text)
+            doc = models.Document(file.path.stem, str(file.path), text)
             doc.urls = reader.extract_urls()
         elif not file.binary:
-            doc = models.Document(name, str(doc_path), file.content)
+            doc = models.Document(file.path.stem, str(file.path), file.content)
         else:
-            log.warning(f'Ignoring unsupported binary file "{file.name}".')
+            log.warning(f'Ignoring unsupported binary file "{file.path.name}".')
             doc = None
         return doc
 

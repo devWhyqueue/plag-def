@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from fpdf import FPDF
 
+from plagdef.model.models import File, Document
 from plagdef.repositories import DocumentFileRepository, PdfReader
 
 
@@ -51,6 +54,16 @@ def test_list_with_doc_dir_containing_pdf_with_no_text(tmp_path):
     docs = repo.list()
     assert len(docs) == 2
     assert 'This also is a document.\n' in [doc.text for doc in docs]
+
+
+def test_create_doc_with_file_in_subdir(tmp_path):
+    doc_repo = DocumentFileRepository(tmp_path)
+    # This file is located in tmp_path/sub/dir/doc.txt
+    file_path = Path(f"{tmp_path}/sub/dir/doc.txt")
+    file = File(file_path, "Hello World!", False)
+    doc = doc_repo._create_doc(file)
+    assert doc == Document("doc", str(file_path), "Hello World!")
+    assert doc.path == str(file_path)
 
 
 # TODO: Implement

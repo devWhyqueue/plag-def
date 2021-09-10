@@ -7,9 +7,9 @@ from plagdef.model.models import Document
 
 
 class DocumentFakeRepository:
-    def __init__(self, documents: set[Document], lang: str, dir_path: Path):
+    def __init__(self, documents: set[Document], lang: str, base_path: Path):
         self.lang = lang
-        self.dir_path = dir_path
+        self.base_path = base_path
         self._documents = documents
 
     def list(self) -> set[Document]:
