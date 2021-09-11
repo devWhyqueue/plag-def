@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
+import requests
 from bs4 import BeautifulSoup
 from requests.exceptions import SSLError
-from urllib3.exceptions import MaxRetryError
 
 from plagdef.model.download import _download_page, download_external_sources, download_all_external_sources
 from plagdef.model.models import Document
@@ -40,8 +40,8 @@ def test_download_page_with_different_content_type(req_mock, tmp_path):
     assert file.binary
 
 
-@patch("requests.get", side_effect=MaxRetryError(None, None))
-def test_download_page_catches_max_retry_error(req_mock, tmp_path):
+@patch("requests.get", side_effect=requests.ConnectionError())
+def test_download_page_catches_timeout_error(req_mock, tmp_path):
     file = _download_page("https://google.de", tmp_path)
     assert not file
 

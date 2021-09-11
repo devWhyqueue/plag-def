@@ -9,9 +9,8 @@ from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from requests.exceptions import SSLError
+from requests.exceptions import RequestException
 from tqdm.contrib.concurrent import thread_map
-from urllib3.exceptions import MaxRetryError
 from werkzeug.utils import secure_filename
 
 from plagdef.model.models import Document, File
@@ -47,5 +46,5 @@ def _download_page(url: str, target_dir: Path) -> File:
             ext = ".txt"
         file = File(Path(f"{target_dir}/{filename}{ext}"), content, binary)
         return file
-    except (MaxRetryError, SSLError):
+    except RequestException:
         log.warning(f'Could not download from "{url}".')
