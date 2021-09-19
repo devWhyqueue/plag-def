@@ -44,7 +44,7 @@ def _download_page(url: str, target_dir: Path) -> File:
         if mime_type.startswith("text/html"):
             content = BeautifulSoup(resp.text, features="lxml").get_text(" ", True)
             ext = ".txt"
-        file = File(Path(f"{target_dir}/{filename}{ext}"), content, binary)
+        file = File(Path(f"{target_dir}/{filename}{ext}"), content, binary) if len(content) else None
         return file
     except RequestException:
         log.warning(f'Could not download from "{url}".')

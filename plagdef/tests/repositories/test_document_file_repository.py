@@ -66,11 +66,6 @@ def test_create_doc_with_file_in_subdir(tmp_path):
     assert doc.path == str(file_path)
 
 
-# TODO: Implement
-def test_list_ignores_unsupported_binary_files():
-    pass
-
-
 def test_pdf_reader_poor_extraction():
     text = 'Ein w(cid:246)rtlicher Match.'
     reader = PdfReader(None, None, None)

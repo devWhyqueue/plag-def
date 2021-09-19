@@ -19,6 +19,13 @@ def test_download_page(req_mock, bs_mock, tmp_path):
     assert not file.binary
 
 
+@patch("requests.get", return_value=FakeResponse({'content-type': 'text/html'}, b'', ''))
+@patch.object(BeautifulSoup, 'get_text', return_value='')
+def test_download_page_returns_none_if_content_length_zero(req_mock, bs_mock, tmp_path):
+    file = _download_page("https://google.com", tmp_path)
+    assert not file
+
+
 @patch("requests.get", return_value=FakeResponse({'content-type': 'text/html'}, b'Content', 'Content'))
 @patch.object(BeautifulSoup, 'get_text', return_value='Content')
 def test_download_page_with_url_with_path(req_mock, bs_mock, tmp_path):

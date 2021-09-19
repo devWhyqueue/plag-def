@@ -307,7 +307,14 @@ def test_extract_urls_filters_duplicates():
     assert doc.urls == {"https://google.de"}
 
 
-def test_url_detection_normalizes_address():
+def test_extract_url_normalizes_address():
     doc = Document("doc", "path/to/doc", "Some URLs: google.de, https://google.de/abc and google.de/abc/")
     _extract_urls(doc)
     assert doc.urls == {'https://google.de/abc', 'https://google.de'}
+
+
+def test_extract_url_rstrips_punctuation():
+    doc = Document("doc", "path/to/doc",
+                   "https://www.weltderphysik.de/gebiet/teilchen/antimaterie/antimaterie-im-universum/,")
+    _extract_urls(doc)
+    assert doc.urls == {'https://www.weltderphysik.de/gebiet/teilchen/antimaterie/antimaterie-im-universum'}

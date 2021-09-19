@@ -108,7 +108,7 @@ class DocumentFileRepository:
         elif not file.binary:
             doc = models.Document(file.path.stem, str(file.path), file.content)
         else:
-            log.warning(f'Ignoring unsupported binary file "{file.path.name}".')
+            log.warning(f'Ignoring unsupported file "{file.path.name}", as it cannot be read.')
             doc = None
         return doc
 
@@ -183,8 +183,12 @@ class PdfReader:
         self._lock = lock
 
     def extract_urls(self):
-        with pdfplumber.open(self._file) as pdf:
-            return {uri_obj['uri'] for uri_obj in pdf.hyperlinks}
+        # Temporary fix for: https://github.com/jsvine/pdfplumber/issues/463
+        try:
+            with pdfplumber.open(self._file) as pdf:
+                return {uri_obj['uri'].rstrip('/') for uri_obj in pdf.hyperlinks}
+        except UnicodeDecodeError:
+            log.warning(f'Could not extract hyperlinks from PDF "{self._file.name}".')
 
     def extract_text(self):
         text = self._extract()

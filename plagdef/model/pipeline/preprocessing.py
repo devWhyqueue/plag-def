@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import string
 from collections import Counter
 from functools import partial
 from urllib.parse import urlparse
@@ -91,7 +92,9 @@ class Preprocessor:
 def _extract_urls(doc: Document, extractor=URLExtract()):
     extractor.update_when_older(7)
     urls = extractor.find_urls(doc.text, only_unique=True, check_dns=True)
-    doc.urls.update({urlparse(url, "https").geturl().rstrip("/").replace("///", "//") for url in urls})
+    for url in urls:
+        url = url[:-1] if url[-1] in string.punctuation else url
+        doc.urls.add(urlparse(url, "https").geturl().rstrip("/").replace("///", "//"))
 
 
 def _nlp_pipe(lang: str) -> Pipeline:
